@@ -1,4 +1,5 @@
 -- creates a trigger that resets the attribute 'valid_email' only when the 'email' has been changed.
+-- <> is same as != why did I use <>? So I can remember both
 DELIMITER //
 CREATE TRIGGER email_validation BEFORE UPDATE ON users
 FOR EACH ROW

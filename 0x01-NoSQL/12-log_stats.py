@@ -1,29 +1,34 @@
 #!/usr/bin/env python3
-"""Provide stats about Nginx logs stored in MongoDB"""
+"""
+Provide stats about Nginx logs stored in MongoDB
+"""
 from pymongo import MongoClient
 
 
-METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"]
 
 
-def stat(mongo_collection, method=None):
-    """Main function for stats generation"""
+def log_stats(mongo_collection, option=None):
+    """
+    Prototype: def log_stats(mongo_collection, option=None):
+    Provide some stats about Nginx logs stored in MongoDB
+    """
     items = {}
-    if method:
+    if option:
         value = mongo_collection.count_documents(
-            {"method": {"$regex": method}})
-        print(f"\tmethod {method}: {value}")
+            {"method": {"$regex": option}})
+        print(f"\tmethod {option}: {value}")
         return
-        
-    res = mongo_collection.count_documents(items)
-    print(f"{res} logs")
-    print("methods:")
+
+    result = mongo_collection.count_documents(items)
+    print(f"{result} logs")
+    print("Methods:")
     for method in METHODS:
-        stat(nginx_collection, method)
-    status = mongo_collection.count_documents({"path": "/status"})
-    print(f"{status} status check")
+        log_stats(nginx_collection, method)
+    status_check = mongo_collection.count_documents({"path": "/status"})
+    print(f"{status_check} status check")
 
 
 if __name__ == "__main__":
-    nginx_collection = MongoClient('mongodb://localhost:27017').logs.nginx
-    stat(nginx_collection)
+    nginx_collection = MongoClient('mongodb://127.0.0.1:27017').logs.nginx
+    log_stats(nginx_collection)

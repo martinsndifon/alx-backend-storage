@@ -15,6 +15,7 @@ def count_calls(method: Callable) -> Callable:
         return method(self, *args, **kwargs)
     return wrapper
 
+
 def call_history(method: Callable) -> Callable:
     """ Decorator for Cache class method to track args
     """
@@ -28,6 +29,7 @@ def call_history(method: Callable) -> Callable:
         self._redis.rpush(f'{method.__qualname__}:outputs', output)
         return output
     return wrapper
+
 
 def replay(fn: Callable) -> None:
     """ Check redis for how many times a function was called and display:
@@ -51,7 +53,7 @@ class Cache:
         """store an instance of the Redis client and flush the instance"""
         self._redis = redis.Redis()
         self._redis.flushdb()
-    
+
     @call_history
     @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
@@ -85,4 +87,3 @@ class Cache:
     def get_str(self, data: bytes) -> str:
         """converts the type from bytes to int"""
         return data.decode('utf-8')
-

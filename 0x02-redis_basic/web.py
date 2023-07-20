@@ -1,36 +1,41 @@
 #!/usr/bin/env python3
-"""
-Caching request module
-"""
-import redis
+"""ALX SE Redis Module."""
 import requests
+import redis
 from functools import wraps
 from typing import Callable
 
+cache = redis.Redis()
 
-def track_get_page(fn: Callable) -> Callable:
-    """ Decorator for get_page
-    """
-    @wraps(fn)
-    def wrapper(url: str) -> str:
-        """ Wrapper that:
-            - check whether a url's data is cached
-            - tracks how many times get_page is called
-        """
-        client = redis.Redis()
-        client.incr(f'count:{url}')
-        cached_page = client.get(f'{url}')
-        if cached_page:
-            return cached_page.decode('utf-8')
-        response = fn(url)
-        client.set(f'{url}', response, 10)
-        return response
+
+def store_cache(method: Callable) -> Callable:
+    """Cache a value for 10 seconds."""
+    @wraps(method)
+    def wrapper(url):
+        """The function wrapper."""
+        if cache.get(url):
+            return cache.get(url).decode()
+        content = method(url)
+        cache.setex(url, 10, content)
+        return content
     return wrapper
 
 
-@track_get_page
+def track_url(method: Callable) -> Callable:
+    """Cache a value for 10 seconds."""
+    @wraps(method)
+    def wrapper(url):
+        """The function wrapper."""
+        cache.incr(f'count:{url}')
+        return method(url)
+    return wrapper
+
+
+@store_cache
+@track_url
 def get_page(url: str) -> str:
-    """ Makes a http request to a given endpoint
-    """
-    response = requests.get(url)
-    return response.text
+    """Get the content of a webpage."""
+    if cache.get(url):
+        return cache.get(url).decode()
+    content = requests.get(url)
+    return content.text
